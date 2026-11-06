@@ -101,31 +101,38 @@
   bindCheck("#opt-sound", "sound");
   bindCheck("#opt-tts", "tts");
   bindCheck("#opt-duck", "duck");
-  $("#opt-voice").addEventListener("change", (e) => { settings.voice = e.target.value; saveSettings(); });
+  $("#opt-voice").addEventListener("change", (e) => { settings.voice = e.target.value; saveSettings(); renderSetup(false); });
   for (const [sel, key] of [["#opt-rate", "rate"], ["#opt-pitch", "pitch"]]) {
     $(sel).addEventListener("input", (e) => { settings[key] = Number(e.target.value); saveSettings(); renderSetup(false); });
   }
   $("#tts-test").onclick = () => speak("여보, 나 루야. 이 목소리 어때?", true);
 
   // 기기에 있는 한국어 음성 목록 채우기 (목록은 늦게 로드되는 경우가 있음)
+  // 목록 = 미리 녹음한 루 목소리 팩(voices/manifest.js) + 기기 한국어 음성
+  const PACKS = window.VOICE_PACKS || [];
+  const packOf = (v) => (v && v.startsWith("pack:") ? PACKS.find((p) => "pack:" + p.id === v) : null);
   function loadVoices() {
-    if (!("speechSynthesis" in window)) return;
     const sel = $("#opt-voice");
-    const voices = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
-    sel.innerHTML = '<option value="">기기 기본</option>';
-    for (const v of voices) {
-      const o = document.createElement("option");
-      o.value = v.name;
-      o.textContent = v.name.replace(/^Microsoft |Google /, "") + (v.localService ? "" : " (온라인)");
-      sel.appendChild(o);
+    sel.innerHTML = "";
+    if (PACKS.length) {
+      const g = document.createElement("optgroup");
+      g.label = "루 목소리 (미리 녹음)";
+      for (const p of PACKS) g.append(new Option(p.label, "pack:" + p.id));
+      sel.append(g);
     }
-    if (!voices.length) sel.innerHTML = '<option value="">한국어 음성 없음 · 기기 기본</option>';
-    sel.value = voices.some((v) => v.name === settings.voice) ? settings.voice : "";
+    const g2 = document.createElement("optgroup");
+    g2.label = "기기 음성";
+    g2.append(new Option("기기 기본", ""));
+    const voices = "speechSynthesis" in window ? speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang)) : [];
+    for (const v of voices) {
+      g2.append(new Option(v.name.replace(/^Microsoft |Google /, "") + (v.localService ? "" : " (온라인)"), v.name));
+    }
+    sel.append(g2);
+    const ok = packOf(settings.voice) || voices.some((v) => v.name === settings.voice);
+    sel.value = ok ? settings.voice : "";
   }
-  if ("speechSynthesis" in window) {
-    loadVoices();
-    speechSynthesis.addEventListener?.("voiceschanged", loadVoices);
-  }
+  loadVoices();
+  if ("speechSynthesis" in window) speechSynthesis.addEventListener?.("voiceschanged", loadVoices);
   bindCheck("#opt-video-loop", "videoLoop");
   bindCheck("#opt-video-sound", "videoSound");
   bindCheck("#opt-tool", "tool");
@@ -191,6 +198,10 @@
     $("#opt-pitch").value = settings.pitch;
     $("#rate-val").textContent = `${settings.rate.toFixed(1)}배`;
     $("#pitch-val").textContent = settings.pitch.toFixed(1);
+    // 녹음 파일은 높낮이를 바꿀 수 없음
+    const isPack = !!packOf(settings.voice);
+    $("#opt-pitch").disabled = isPack;
+    $("#pitch-note").hidden = !isPack;
     $("#opt-duck").checked = settings.duck;
     $("#opt-permit").value = settings.permitSec;
     $("#opt-video-loop").checked = settings.videoLoop;
@@ -240,12 +251,34 @@
     } catch {}
   }
   let speaking = false;
+  // 녹음 파일은 오디오 요소 하나를 계속 재사용 (모바일에서 첫 재생 이후에도 자동 재생이 막히지 않게)
+  const voiceAudio = new Audio();
+  voiceAudio.preload = "auto";
+  voiceAudio.onplaying = () => { speaking = true; };
+  voiceAudio.onended = voiceAudio.onpause = voiceAudio.onerror = () => { speaking = false; };
+  function stopVoice() {
+    voiceAudio.pause();
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+  }
+
   function speak(text, force = false) {
-    if ((!settings.tts && !force) || !("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
+    if (!settings.tts && !force) return;
+    stopVoice();
+    // 1) 루 목소리 팩에 이 문장 파일이 있으면 그걸 재생
+    const pack = packOf(settings.voice);
+    const file = pack && pack.files[text];
+    if (file) {
+      voiceAudio.src = `voices/${pack.id}/${file}`;
+      voiceAudio.playbackRate = settings.rate;
+      voiceAudio.preservesPitch = true;
+      voiceAudio.play().catch(() => {});
+      return;
+    }
+    // 2) 없으면(새로 추가한 문장 등) 기기 음성으로 읽기
+    if (!("speechSynthesis" in window)) return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ko-KR";
-    const v = settings.voice && speechSynthesis.getVoices().find((x) => x.name === settings.voice);
+    const v = settings.voice && !pack && speechSynthesis.getVoices().find((x) => x.name === settings.voice);
     if (v) u.voice = v;
     u.rate = settings.rate;
     u.pitch = settings.pitch;
@@ -407,7 +440,7 @@
     cancelAnimationFrame(rafId);
     clearInterval(beatTimer);
     videoStop();
-    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    stopVoice();
   }
 
   function record(outcome) {

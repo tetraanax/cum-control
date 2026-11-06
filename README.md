@@ -25,4 +25,23 @@
 
 ## 수정 후 올릴 때
 
-`index.html` 아래쪽의 `?v=6` 숫자(style.css, cues.js, app.js 세 군데)를 하나씩 올려 주세요. 그래야 휴대폰 브라우저가 예전 파일을 캐시에서 쓰지 않고 새 파일을 받습니다.
+`index.html` 아래쪽의 `?v=7` 숫자(style.css, cues.js, voices/manifest.js, app.js 네 군데)를 하나씩 올려 주세요. 그래야 휴대폰 브라우저가 예전 파일을 캐시에서 쓰지 않고 새 파일을 받습니다.
+
+## 루 목소리 (미리 녹음한 음성)
+
+`voices/` 폴더에 지시문마다 mp3가 들어 있고, 설정 → 세부 설정 → 음성으로 읽기 → 목소리에서 고를 수 있습니다.
+
+| 팩 | 엔진 | 비고 |
+|---|---|---|
+| InJoon, Hyunsu | Microsoft Edge 온라인 음성 (`msedge-tts`) | 가장 자연스러움. 공식 API가 아니라 무료 음성을 끌어다 쓰는 방식 |
+| SNAP 애니체·친절체 | [SNAP Piper Korean](https://huggingface.co/softguy777/snap_piper_korean_22k) (Apache-2.0) | 오픈소스, PC에서 오프라인 생성 |
+
+문장을 고치거나 레벨 4를 채운 뒤에는 음성을 다시 만들어야 합니다. 만들지 않은 문장은 기기 음성으로 읽습니다.
+
+```
+cd tools
+npm install        # 처음 한 번
+node make_voices.mjs
+```
+
+필요: Node, ffmpeg. 바뀐 문장만 새로 만들고, 안 쓰는 파일은 지웁니다. 목소리 팩 추가·삭제·속도는 `tools/make_voices.mjs` 위쪽 `PACKS`에서 바꿉니다.
