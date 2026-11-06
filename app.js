@@ -20,6 +20,10 @@
     tool: false,
     tool2: false,
     level: 1,
+    voice: "",     // 고른 음성 이름 (빈 값 = 기기 기본)
+    rate: 1.1,     // 말 속도
+    pitch: 1.1,    // 높낮이
+    duck: true,    // 읽는 동안 메트로놈 줄이기
   };
 
   // 지시문 레벨: 고른 레벨 이하의 문장이 나오고, 고른 레벨 문장이 더 자주 나옴
@@ -96,6 +100,32 @@
   });
   bindCheck("#opt-sound", "sound");
   bindCheck("#opt-tts", "tts");
+  bindCheck("#opt-duck", "duck");
+  $("#opt-voice").addEventListener("change", (e) => { settings.voice = e.target.value; saveSettings(); });
+  for (const [sel, key] of [["#opt-rate", "rate"], ["#opt-pitch", "pitch"]]) {
+    $(sel).addEventListener("input", (e) => { settings[key] = Number(e.target.value); saveSettings(); renderSetup(false); });
+  }
+  $("#tts-test").onclick = () => speak("여보, 나 루야. 이 목소리 어때?", true);
+
+  // 기기에 있는 한국어 음성 목록 채우기 (목록은 늦게 로드되는 경우가 있음)
+  function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
+    const sel = $("#opt-voice");
+    const voices = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+    sel.innerHTML = '<option value="">기기 기본</option>';
+    for (const v of voices) {
+      const o = document.createElement("option");
+      o.value = v.name;
+      o.textContent = v.name.replace(/^Microsoft |Google /, "") + (v.localService ? "" : " (온라인)");
+      sel.appendChild(o);
+    }
+    if (!voices.length) sel.innerHTML = '<option value="">한국어 음성 없음 · 기기 기본</option>';
+    sel.value = voices.some((v) => v.name === settings.voice) ? settings.voice : "";
+  }
+  if ("speechSynthesis" in window) {
+    loadVoices();
+    speechSynthesis.addEventListener?.("voiceschanged", loadVoices);
+  }
   bindCheck("#opt-video-loop", "videoLoop");
   bindCheck("#opt-video-sound", "videoSound");
   bindCheck("#opt-tool", "tool");
@@ -156,6 +186,12 @@
     $("#level-hint").textContent = (LEVELS[settings.level] || LEVELS[1]).hint;
     $("#opt-sound").checked = settings.sound;
     $("#opt-tts").checked = settings.tts;
+    $("#tts-opts").hidden = !settings.tts;
+    $("#opt-rate").value = settings.rate;
+    $("#opt-pitch").value = settings.pitch;
+    $("#rate-val").textContent = `${settings.rate.toFixed(1)}배`;
+    $("#pitch-val").textContent = settings.pitch.toFixed(1);
+    $("#opt-duck").checked = settings.duck;
     $("#opt-permit").value = settings.permitSec;
     $("#opt-video-loop").checked = settings.videoLoop;
     $("#opt-video-sound").checked = settings.videoSound;
@@ -195,17 +231,26 @@
       const o = audio.createOscillator();
       const g = audio.createGain();
       o.frequency.value = accent ? 1200 : 880;
-      g.gain.setValueAtTime(0.25, audio.currentTime);
+      // 음성이 나오는 동안에는 메트로놈을 작게
+      const vol = settings.duck && speaking ? 0.05 : 0.25;
+      g.gain.setValueAtTime(vol, audio.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.06);
       o.connect(g).connect(audio.destination);
       o.start(); o.stop(audio.currentTime + 0.07);
     } catch {}
   }
-  function speak(text) {
-    if (!settings.tts || !("speechSynthesis" in window)) return;
+  let speaking = false;
+  function speak(text, force = false) {
+    if ((!settings.tts && !force) || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ko-KR";
+    const v = settings.voice && speechSynthesis.getVoices().find((x) => x.name === settings.voice);
+    if (v) u.voice = v;
+    u.rate = settings.rate;
+    u.pitch = settings.pitch;
+    u.onstart = () => { speaking = true; };
+    u.onend = u.onerror = () => { speaking = false; };
     speechSynthesis.speak(u);
   }
 

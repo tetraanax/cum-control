@@ -66,6 +66,15 @@ details[open] summary { margin-bottom: 10px; }
   width: 72px; padding: 6px 8px; border-radius: 8px;
   border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit;
 }
+.sub-opts { margin: 4px 0 6px 26px; padding-left: 12px; border-left: 2px solid var(--line); }
+.sub-opts .btn { margin-top: 10px; }
+.inline select {
+  flex: 1; min-width: 0; max-width: 100%; padding: 6px 8px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit;
+}
+.inline input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.inline span { min-width: 3em; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
 .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 
 .btn {
