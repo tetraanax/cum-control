@@ -322,9 +322,9 @@
     G.bpm = 0;
     restartBeat();
     setCueClass("wait");
-    $("#cue-text").textContent = "진정하세요";
+    $("#cue-text").textContent = "진정해. 아직 멀었어~";
     $("#cue-bpm").textContent = "손 떼고 호흡";
-    speak("진정하세요");
+    speak("진정해. 아직 멀었어");
     updateHud();
   }
 
@@ -372,10 +372,10 @@
     record(allowed ? "허용" : "거부");
     showResult(allowed ? "ok" : "no",
       allowed ? "허용" : "거부",
-      allowed ? "끝까지 버텼습니다!" : "끝까지 버텼지만 이번엔 거부입니다",
+      allowed ? "끝까지 버텼네? 기특해. 이제 해도 돼" : "끝까지 버텼는데… 안타깝다~ 이번엔 안 돼",
       `${Math.round(G.total / 60)}분 · ${DIFF[G.diff].label} · ${ENDINGS[G.ending].label}`,
       allowed ? permit : 0);
-    speak(allowed ? "허용합니다" : "거부합니다");
+    speak(allowed ? "해도 돼" : "안 돼~");
   }
 
   function fail() {
@@ -383,7 +383,7 @@
     stopEngine();
     const pct = Math.min(100, Math.round((G.elapsed / G.total) * 100));
     record("실패");
-    showResult("", "실패", `${pct}% 지점에서 실패`, `${fmt(G.elapsed)} / ${fmt(G.total)} · 참음 ${G.holds}회`, 0);
+    showResult("", "실패", `${pct}%에서 끝? 벌써?`, `${fmt(G.elapsed)} / ${fmt(G.total)}`, 0);
   }
 
   function quit() {
