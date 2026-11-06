@@ -6,7 +6,42 @@
 //       "tool"  = 도구 옵션을 켰을 때만
 //       "tool2" = 다른 도구 옵션을 켰을 때만
 //       "hand"  = 두 옵션이 모두 꺼져 있을 때만
+// level: 생략 = 1. 설정에서 고른 레벨 "이하"의 문장이 나오고, 고른 레벨 문장이 더 자주 나옵니다.
 window.CUES = [
+  // ════════ 레벨 4 · 매운맛 (직접 채우는 칸) ════════
+  // 아래 줄을 복사해서 text만 바꾸면 됩니다. 색·박자·시간도 원하는 대로.
+  { text: "(레벨 4 진행 문장을 여기에)", color: "green", bpm: [70, 100], dur: [15, 25], level: 4 },
+  { text: "(레벨 4 빠른 문장을 여기에)", color: "yellow", bpm: [120, 160], dur: [8, 15], level: 4 },
+  { text: "(레벨 4 정지 문장을 여기에)", color: "red", bpm: [0, 0], dur: [12, 20], level: 4 },
+
+  // ════════ 레벨 3 · 야릇 ════════
+  { text: "여보 지금 표정 진짜 위험해… 그 얼굴 나만 보는 거지?", color: "green", bpm: [55, 75], dur: [20, 30], level: 3 },
+  { text: "숨소리 거칠어진 거 다 들려. 귀가 저절로 쫑긋해져", color: "green", bpm: [70, 90], dur: [15, 25], level: 3 },
+  { text: "내가 귀에 대고 속삭이는 거라고 생각해. 천천히… 더 천천히", color: "green", bpm: [35, 50], dur: [20, 30], level: 3 },
+  { text: "참는 여보가 제일 섹시해. 그러니까 더 참아 줘", color: "green", bpm: [60, 80], dur: [20, 30], level: 3 },
+  { text: "몸 떨리는 거 다 보여. 그래도 아직은 안 돼", color: "yellow", bpm: [90, 110], dur: [10, 18], level: 3 },
+  { text: "지금 속도 올려. 여보가 무너지는 거 보고 싶어", color: "yellow", bpm: [120, 150], dur: [8, 14], level: 3 },
+  { text: "끝까지 가기 직전까지만. 딱 거기서 멈출 수 있지?", color: "yellow", bpm: [110, 135], dur: [8, 12], level: 3 },
+  { text: "멈춰. 여보가 애타서 어쩔 줄 모르는 거, 그게 보고 싶었어", color: "red", bpm: [0, 0], dur: [15, 25], level: 3 },
+  { text: "손 떼. 아무것도 못 하고 나만 생각해. 꼬리로 살살 간지럽히는 중이야", color: "red", bpm: [0, 0], dur: [15, 25], level: 3 },
+  { text: "정지. 지금 얼마나 하고 싶은지 나한테 말해 봐. 그래도 안 돼", color: "red", bpm: [0, 0], dur: [12, 20], level: 3 },
+  { text: "도구로 아주 느리게. 여보 반응 하나하나 다 보고 있어", color: "green", bpm: [40, 55], dur: [20, 30], mode: "tool", level: 3 },
+  { text: "도구 세게. 버틸 수 있으면 버텨 봐, 여보", color: "yellow", bpm: [120, 150], dur: [8, 12], mode: "tool", level: 3 },
+  { text: "다른 도구 느낌에만 집중해. 손은 대지 마. 애타지?", color: "red", bpm: [0, 0], dur: [20, 30], mode: "tool2", level: 3 },
+
+  // ════════ 레벨 2 · 장난 ════════
+  { text: "여보 벌써 이러면 어떡해~ 아직 시작도 안 했는데", color: "green", bpm: [60, 80], dur: [15, 25], level: 2 },
+  { text: "그 속도 그대로. 흔들리면 나 다 놀릴 거야", color: "green", bpm: [75, 95], dur: [15, 25], level: 2 },
+  { text: "내가 보고 있는 거 알지? 눈 피하지 마", color: "green", bpm: [65, 85], dur: [15, 25], level: 2 },
+  { text: "더 빨리! 여보 한계가 어디까진지 궁금해", color: "yellow", bpm: [120, 145], dur: [8, 14], level: 2 },
+  { text: "확 느리게. 답답하지? 그 얼굴 귀엽다", color: "yellow", bpm: [30, 45], dur: [15, 25], level: 2 },
+  { text: "박자 놓치면 벌칙이야. 뭐 할지는 비밀", color: "yellow", bpm: [95, 115], dur: [10, 18], level: 2 },
+  { text: "스톱! 헤헤, 아쉽지? 나 꼬리 흔들면서 구경 중", color: "red", bpm: [0, 0], dur: [12, 20], level: 2 },
+  { text: "손 떼. 여보 참는 얼굴 보는 게 제일 재밌어", color: "red", bpm: [0, 0], dur: [12, 20], level: 2 },
+  { text: "도구로 바꿔. 손보다 이게 좋아? 솔직하게 말해 봐", color: "yellow", bpm: [70, 95], dur: [12, 20], mode: "tool", level: 2 },
+  { text: "다른 도구 그대로 두고 손은 쉬어. 그거만으로 버틸 수 있나 보자", color: "red", bpm: [0, 0], dur: [15, 25], mode: "tool2", level: 2 },
+
+  // ════════ 레벨 1 · 순한맛 (level 생략 = 1) ════════
   // ── 다른 도구 옵션 전용 (mode: "tool2")
   { text: "여보, 다른 도구 꺼내 봐. 나 꼬리 벌써 흔들려", color: "yellow", bpm: [50, 70], dur: [15, 25], mode: "tool2" },
   { text: "다른 도구에만 집중해. 딴생각하면 나 귀 처진다?", color: "green", bpm: [40, 60], dur: [20, 30], mode: "tool2" },

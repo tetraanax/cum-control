@@ -19,7 +19,17 @@
     videoSound: false,
     tool: false,
     tool2: false,
+    level: 1,
   };
+
+  // 지시문 레벨: 고른 레벨 이하의 문장이 나오고, 고른 레벨 문장이 더 자주 나옴
+  const LEVELS = {
+    1: { label: "순한맛", hint: "다정한 루. 가볍게 즐기기 좋아요." },
+    2: { label: "장난", hint: "루가 더 놀리고 도발해요. 레벨 1 문장도 가끔 섞여요." },
+    3: { label: "야릇", hint: "애태우고 수위 있는 분위기. 아래 레벨 문장도 가끔 섞여요." },
+    4: { label: "매운맛", hint: "cues.js에서 직접 채우는 레벨이에요. 아래 레벨 문장도 가끔 섞여요." },
+  };
+  const LEVEL_WEIGHT_TOP = 3; // 고른 레벨 문장의 가중치 (아래 레벨은 1)
 
   // 난이도별 파라미터
   const DIFF = {
@@ -72,6 +82,7 @@
   bindChips("#dur-chips", "min", "minutes", Number);
   bindChips("#diff-chips", "v", "difficulty");
   bindChips("#end-chips", "v", "ending");
+  bindChips("#level-chips", "v", "level", Number);
 
   $("#dur-custom").addEventListener("input", (e) => {
     const v = Math.round(Number(e.target.value));
@@ -141,6 +152,8 @@
     const preset = [3, 5, 10, 15, 20, 30].includes(settings.minutes);
     if (updateCustom) $("#dur-custom").value = preset ? "" : settings.minutes;
     $("#end-hint").textContent = ENDINGS[settings.ending].hint;
+    mark("#level-chips", "v", settings.level);
+    $("#level-hint").textContent = (LEVELS[settings.level] || LEVELS[1]).hint;
     $("#opt-sound").checked = settings.sound;
     $("#opt-tts").checked = settings.tts;
     $("#opt-permit").value = settings.permitSec;
@@ -221,11 +234,17 @@
       tool2: settings.tool2,
       hand: !settings.tool && !settings.tool2,
     };
-    const pool = window.CUES.filter((c) => !c.mode || allowed[c.mode]);
+    const lv = settings.level || 1;
+    const pool = window.CUES.filter((c) => (!c.mode || allowed[c.mode]) && (c.level || 1) <= lv);
     const wantRed = Math.random() < d.redRatio;
     let candidates = pool.filter((c) => (c.color === "red") === wantRed && c !== G.cue);
     if (!candidates.length) candidates = pool.filter((c) => c !== G.cue);
-    const c = candidates[Math.floor(Math.random() * candidates.length)];
+    if (!candidates.length) candidates = pool;
+    // 가중치 추첨: 고른 레벨 문장이 더 자주
+    const w = candidates.map((c) => ((c.level || 1) === lv ? LEVEL_WEIGHT_TOP : 1));
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    let c = candidates[candidates.length - 1];
+    for (let i = 0; i < candidates.length; i++) { r -= w[i]; if (r < 0) { c = candidates[i]; break; } }
     const bpm = c.color === "red" ? 0 : Math.round(rand(c.bpm[0], c.bpm[1]) * d.bpmMul);
     const dur = rand(c.dur[0], c.dur[1]) * d.durMul;
     return { ...c, _bpm: bpm, _dur: dur, ref: c };
