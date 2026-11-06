@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>참기 타이머</title>
+  <meta name="description" content="리듬과 정지 신호에 맞춰 버티는 셀프 컨트롤 타이머" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 성인 인증 -->
+  <div id="gate" class="gate" hidden>
+    <div class="gate-card">
+      <h2>성인 전용</h2>
+      <p>이 페이지는 만 19세 이상만 이용할 수 있습니다.</p>
+      <div class="row">
+        <button id="gate-yes" class="btn primary">19세 이상입니다</button>
+        <a class="btn ghost" href="https://www.google.com">나가기</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="brand">참기 타이머</div>
+    <nav>
+      <button class="link" data-open="history">기록</button>
+      <button class="link" data-open="help">사용법</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 설정 화면 -->
+    <section id="setup" class="screen">
+      <h1>얼마나 버틸 수 있나요?</h1>
+      <p class="lead">색 신호와 박자를 따라가세요. 빨간 신호가 나오면 즉시 멈춥니다.</p>
+
+      <div class="card">
+        <h3>시간</h3>
+        <div class="chips" id="dur-chips">
+          <button data-min="3">3분</button>
+          <button data-min="5">5분</button>
+          <button data-min="10">10분</button>
+          <button data-min="15">15분</button>
+          <button data-min="20">20분</button>
+          <button data-min="30">30분</button>
+        </div>
+        <label class="inline">직접 입력
+          <input type="number" id="dur-custom" min="1" max="180" /> 분
+        </label>
+      </div>
+
+      <div class="card">
+        <h3>난이도</h3>
+        <div class="chips" id="diff-chips">
+          <button data-v="easy">쉬움</button>
+          <button data-v="normal">보통</button>
+          <button data-v="hard">어려움</button>
+          <button data-v="hell">지옥</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>엔딩</h3>
+        <div class="chips" id="end-chips">
+          <button data-v="lottery">추첨</button>
+          <button data-v="allow">무조건 허용</button>
+          <button data-v="deny">무조건 거부</button>
+          <button data-v="edge">아슬아슬</button>
+        </div>
+        <p class="hint" id="end-hint"></p>
+      </div>
+
+      <div class="card">
+        <h3>배경 영상</h3>
+        <div class="row" style="margin-top:0">
+          <label class="btn ghost file">갤러리에서 선택
+            <input type="file" id="video-file" accept="video/*" hidden />
+          </label>
+          <button class="btn ghost" id="video-clear" hidden>영상 빼기</button>
+        </div>
+        <p class="hint" id="video-name">선택한 영상이 없습니다. 영상 없이도 할 수 있어요.</p>
+        <label class="inline">
+          <input type="checkbox" id="opt-video-loop" /> 반복 재생
+        </label>
+        <label class="inline">
+          <input type="checkbox" id="opt-video-sound" /> 영상 소리 켜기
+        </label>
+      </div>
+
+      <details class="card">
+        <summary>세부 설정</summary>
+        <label class="inline">
+          <input type="checkbox" id="opt-sound" /> 메트로놈 소리
+        </label>
+        <label class="inline">
+          <input type="checkbox" id="opt-tts" /> 음성으로 읽기
+        </label>
+        <label class="inline">허용 시간
+          <input type="number" id="opt-permit" min="5" max="60" /> 초
+        </label>
+        <div class="row">
+          <button class="btn ghost" id="export">설정 내보내기</button>
+          <label class="btn ghost file">설정 불러오기
+            <input type="file" id="import" accept="application/json" hidden />
+          </label>
+        </div>
+      </details>
+
+      <button id="start" class="btn primary big">시작</button>
+    </section>
+
+    <!-- 플레이 화면 -->
+    <section id="play" class="screen" hidden>
+      <div class="progress"><div id="bar"></div></div>
+      <div class="meta">
+        <span id="time-left">00:00</span>
+        <span id="chance"></span>
+      </div>
+
+      <div id="cue" class="cue green">
+        <video id="bg-video" class="bg-video" playsinline muted hidden></video>
+        <div id="pulse" class="pulse"></div>
+        <div class="cue-box">
+          <div id="cue-text" class="cue-text">준비</div>
+          <div id="cue-bpm" class="cue-bpm"></div>
+          <div id="cue-sub" class="cue-sub"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="btn-quit" class="btn quit">종료</button>
+      </div>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section id="result" class="screen" hidden>
+      <div id="result-badge" class="badge"></div>
+      <h1 id="result-title"></h1>
+      <p id="result-desc" class="lead"></p>
+      <div id="permit-timer" class="permit" hidden></div>
+      <button id="again" class="btn primary big">다시 하기</button>
+    </section>
+  </main>
+
+  <!-- 모달 -->
+  <dialog id="history">
+    <h2>기록</h2>
+    <ul id="history-list"></ul>
+    <div class="row">
+      <button class="btn ghost" id="history-clear">기록 지우기</button>
+      <button class="btn primary" data-close>닫기</button>
+    </div>
+  </dialog>
+
+  <dialog id="help">
+    <h2>사용법</h2>
+    <ol>
+      <li>시간, 난이도, 엔딩 방식을 고릅니다.</li>
+      <li>초록·노랑 신호에서는 표시된 박자(BPM)에 맞춥니다.</li>
+      <li>빨간 신호가 나오면 즉시 멈춥니다.</li>
+      <li>시간이 끝나면 엔딩 방식에 따라 결과가 정해집니다.</li>
+      <li>중간에 그만두려면 <b>종료</b>를 누릅니다.</li>
+    </ol>
+    <p class="hint">설정과 기록은 이 브라우저에만 저장되며 서버로 전송되지 않습니다.</p>
+    <div class="row"><button class="btn primary" data-close>닫기</button></div>
+  </dialog>
+
+  <script src="cues.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
