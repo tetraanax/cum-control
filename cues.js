@@ -2,7 +2,16 @@
 // color: 'green' = 진행, 'yellow' = 주의/변화, 'red' = 정지(손 떼기)
 // bpm: [최소, 최대] 템포 (red는 0)
 // dur: [최소, 최대] 지속 시간(초) — 난이도에 따라 배율이 적용됩니다.
+// mode: 생략 = 항상 나옴 / "tool" = 도구 옵션을 켰을 때만 / "hand" = 도구 옵션을 껐을 때만
 window.CUES = [
+  // ── 도구 옵션 전용 (mode: "tool")
+  { text: "도구로 바꾸세요", color: "yellow", bpm: [60, 80], dur: [15, 25], mode: "tool" },
+  { text: "도구로 천천히", color: "green", bpm: [45, 65], dur: [20, 30], mode: "tool" },
+  { text: "도구로 박자 유지", color: "green", bpm: [70, 95], dur: [15, 25], mode: "tool" },
+  { text: "도구로 빠르게", color: "yellow", bpm: [110, 140], dur: [8, 15], mode: "tool" },
+  { text: "도구를 내려놓으세요", color: "red", bpm: [0, 0], dur: [10, 20], mode: "tool" },
+  { text: "손으로 돌아가세요", color: "yellow", bpm: [60, 90], dur: [12, 20], mode: "tool" },
+
   // ── 진행 (green)
   { text: "천천히 시작하세요", color: "green", bpm: [50, 70], dur: [15, 25] },
   { text: "지금 속도를 유지하세요", color: "green", bpm: [70, 90], dur: [15, 30] },

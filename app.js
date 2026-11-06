@@ -17,6 +17,7 @@
     permitSec: 15,
     videoLoop: true,
     videoSound: false,
+    tool: false,
   };
 
   // 난이도별 파라미터
@@ -85,6 +86,7 @@
   bindCheck("#opt-tts", "tts");
   bindCheck("#opt-video-loop", "videoLoop");
   bindCheck("#opt-video-sound", "videoSound");
+  bindCheck("#opt-tool", "tool");
 
   // ───────── 배경 영상 ─────────
   // 파일은 기기에서 바로 재생하며 어디에도 업로드되지 않습니다.
@@ -142,6 +144,7 @@
     $("#opt-permit").value = settings.permitSec;
     $("#opt-video-loop").checked = settings.videoLoop;
     $("#opt-video-sound").checked = settings.videoSound;
+    $("#opt-tool").checked = settings.tool;
   }
   renderSetup();
 
@@ -209,7 +212,9 @@
 
   function pickCue() {
     const d = DIFF[G.diff];
-    const pool = window.CUES;
+    // 도구 옵션에 따라 큐 걸러내기
+    const off = settings.tool ? "hand" : "tool";
+    const pool = window.CUES.filter((c) => c.mode !== off);
     const wantRed = Math.random() < d.redRatio;
     let candidates = pool.filter((c) => (c.color === "red") === wantRed && c !== G.cue);
     if (!candidates.length) candidates = pool.filter((c) => c !== G.cue);
